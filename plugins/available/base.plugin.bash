@@ -5,7 +5,15 @@ function ips ()
 {
     about 'display all ip addresses for this host'
     group 'base'
-    ifconfig | awk '/inet /{ print $2 }'
+    if command -v ifconfig &>/dev/null
+    then
+        ifconfig | awk '/inet /{ print $2 }'
+    elif command -v ip &>/dev/null
+    then
+        ip addr | grep -oP 'inet \K[\d.]+'
+    else
+        echo "You don't have ifconfig or ip command installed!"
+    fi
 }
 
 function down4me ()
@@ -24,7 +32,6 @@ function myip ()
     res=$(curl -s checkip.dyndns.org | grep -Eo '[0-9\.]+')
     echo -e "Your public IP is: ${echo_bold_green} $res ${echo_normal}"
 }
-
 
 function pickfrom ()
 {
@@ -81,8 +88,8 @@ function mkcd ()
     example '$ mkcd foo'
     example '$ mkcd /tmp/img/photos/large'
     group 'base'
-    mkdir -p "$*"
-    cd "$*"
+    mkdir -p -- "$*"
+    cd -- "$*"
 }
 
 function lsgrep ()
@@ -92,7 +99,6 @@ function lsgrep ()
     ls | grep "$*"
 }
 
-
 function pman ()
 {
     about 'view man documentation in Preview'
@@ -101,7 +107,6 @@ function pman ()
     group 'base'
     man -t "${1}" | open -f -a $PREVIEW
 }
-
 
 function pcurl ()
 {
@@ -125,16 +130,16 @@ function quiet ()
 {
     about 'what *does* this do?'
     group 'base'
-	$* &> /dev/null &
+    $* &> /dev/null &
 }
 
 function banish-cookies ()
 {
     about 'redirect .adobe and .macromedia files to /dev/null'
     group 'base'
-	rm -r ~/.macromedia ~/.adobe
-	ln -s /dev/null ~/.adobe
-	ln -s /dev/null ~/.macromedia
+    rm -r ~/.macromedia ~/.adobe
+    ln -s /dev/null ~/.adobe
+    ln -s /dev/null ~/.macromedia
 }
 
 function usage ()
@@ -184,7 +189,6 @@ function command_exists ()
 
 mkiso ()
 {
-
     about 'creates iso from current dir in the parent dir (unless defined)'
     param '1: ISO name'
     param '2: dest/path'
@@ -217,5 +221,5 @@ function buf ()
     group 'base'
     local filename=$1
     local filetime=$(date +%Y%m%d_%H%M%S)
-    cp "${filename}" "${filename}_${filetime}"
+    cp -a "${filename}" "${filename}_${filetime}"
 }
